@@ -35,13 +35,44 @@ public class Scene : MonoBehaviour
 
         // Image plane "corner" rays first (frustum edges).
         this.debug.Ray(new Ray(Vector3.zero, NormalizedImageToWorldCoord(0f, 0f)), Color.blue);
-        
-        // Add more rays to visualise here...
-    }
 
+        // Add more rays to visualise here...
+        this.debug.Ray(new Ray(Vector3.zero, NormalizedImageToWorldCoord(1f, 0f)), Color.blue);
+        this.debug.Ray(new Ray(Vector3.zero, NormalizedImageToWorldCoord(1f, 1f)), Color.blue);
+        this.debug.Ray(new Ray(Vector3.zero, NormalizedImageToWorldCoord(0f, 1f)), Color.blue);
+
+        //White rays
+        for (int i = 0; i < this.image.Width; i++)
+        {
+            for(int j = 0; j < this.image.Height; j++)
+            {
+                this.debug.Ray(new Ray(Vector3.zero, NormalizedImageToWorldCoord((i + 0.5f) / this.image.Width, (j + 0.5f) / this.image.Height)), Color.white);
+            }
+        }
+    }
+    
     private void Render()
     {
         // Render the image here...
+        for (int i = 0; i < this.image.Width; i++)
+        {
+            for (int j = 0; j < this.image.Height; j++)
+            {
+                this.image.SetPixel(i, j, Color.black);
+                foreach (var sceneEntity in FindObjectsOfType<SceneEntity>())
+                {
+                    // Note: sceneEntity could actually be a Triangle OR Plane OR Sphere.
+                    // But does it matter for the purposes of this exercise?
+                    var newRay = new Ray(Vector3.zero, NormalizedImageToWorldCoord((i + 0.5f) / this.image.Width, (j + 0.5f) / this.image.Height));
+                    if (sceneEntity.Intersect(newRay) != null)
+                    {
+                        this.image.SetPixel(i, j, sceneEntity.Color());
+                    }
+                }
+            }
+        }
+
+        
     }
 
     private Vector3 NormalizedImageToWorldCoord(float x, float y)
